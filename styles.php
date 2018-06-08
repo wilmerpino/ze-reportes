@@ -67,7 +67,7 @@ $_style = array(
             )
         )
     ),
-    'encabezados_agrupados' =>  array(
+    'encabezados_agrupados_1' =>  array(
         'borders' => array(
             'outline' => array(
                 'style' => PHPExcel_Style_Border::BORDER_THIN,
@@ -94,6 +94,42 @@ $_style = array(
             'rotation' => 90,
             'color' => array(
                 'argb' => '004C8C'
+            ),
+            'startColor' => array(
+                'argb' => 'FFFFFF',
+            ),
+            'endColor' => array(
+                'argb' => 'FFFFFFFF',
+            )
+        )
+     ),   
+	 'encabezados_agrupados_2' =>  array(
+        'borders' => array(
+            'outline' => array(
+                'style' => PHPExcel_Style_Border::BORDER_THIN,
+                'color' => array('argb' => '62727b'),
+            ),
+            'inside' => array(
+                'style' => PHPExcel_Style_Border::BORDER_THIN,
+                'color' => array('argb' => 'FFFFFF'),
+            ),
+        ),
+        'alignment' => array(
+            'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+            'vertical' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+            'wrap' => true
+        ),
+        'font' => array(
+            'bold' => true,
+            'name' => 'Verdana',
+            'color' => array('rgb' => 'FFFFFF'),
+            'size' => 10
+        ),
+        'fill' => array(
+            'type' => PHPExcel_Style_Fill::FILL_SOLID,
+            'rotation' => 90,
+            'color' => array(
+                'argb' => '0062b3'
             ),
             'startColor' => array(
                 'argb' => 'FFFFFF',

@@ -57,7 +57,7 @@ class excel_reportes implements ze_reportes_interface{
      
     public function __construct($encoding = "UTF8", $propiedades = array()){
         try {            
-            $this->titulo = "Utilice el método setTitulo(\$titulo)";
+            $this->titulo = "Utilice el mï¿½todo setTitulo(\$titulo)";
             $this->subtitulo = "";            
             $this->error = null;              
             $this->debug = false;   
@@ -100,7 +100,7 @@ HTML;
     
     private function _echo($texto, $linea){
         if($this->debug == true){
-            debug("Línea {$linea}: ".$texto, true);
+            debug("Lï¿½nea {$linea}: ".$texto, true);
         }
     }
     
@@ -159,7 +159,7 @@ HTML;
             $properties['Description'] = $descripcion;
             $properties['Keywords'] = $claves;
             $properties['Category'] = $categoria;
-            $properties['NOTA'] = "Las propiedades deben estar en codificación UTF8, utilice utf8_encode";
+            $properties['NOTA'] = "Las propiedades deben estar en codificaciï¿½n UTF8, utilice utf8_encode";
             $this->debug($properties, true);
         }
     }
@@ -277,30 +277,36 @@ HTML;
     
     public function setEncabezadoMerge(){
         try {
-            $encabezados = $this->columnasMerge;
+            $encabezados = $this->columnasMerge;;
             $cols = count($encabezados);
 
             if ($cols == 0) {
                 return;
             }
 
-            $row = $this->fila_actual+1;
+$enc=1;
+
+            foreach($encabezados as $encabezado2){
+			$row = $this->fila_actual+1;
             $col = 0;
             $celda = $this->celda[$col] . $row;
-
-            foreach($encabezados as $encabezado){
+            foreach($encabezado2 as $encabezado){
                 $texto = ($this->encoding  != "utf8")?  utf8_encode($encabezado["nombre"]):  $encabezado["nombre"];                
                 $col_ini = $encabezado["desde"];
                 $col_fin = $encabezado["hasta"];
                 $celda = $this->celda[$col_ini].$row.":".$this->celda[$col_fin].$row;
+				//print_r($encabezado);
+				//print_r($this->celda[$col_ini]);
                 $this->sheet->mergeCells($celda);
                 $this->sheet->setCellValue($this->celda[$col_ini] . $row, $texto);
                 $this->sheet->getStyle($celda)->getAlignment()->setHorizontal($this->alineacion[$encabezado["alineacion"]]);
-                $this->sheet->getStyle($celda)->applyFromArray($this->getEstilo('encabezados_agrupados'));
+                $this->sheet->getStyle($celda)->applyFromArray($this->getEstilo('encabezados_agrupados_'.$enc));
                 $col++;
             }
             $this->sheet->getRowDimension($row)->setRowHeight($this->alto_encabezados);
-            $this->fila_actual = $row;            
+            $this->fila_actual = $row; 
+			$enc++;
+			}			
             return(true);
         }
         catch(Exception $ex){
@@ -318,7 +324,7 @@ HTML;
             $tamano = ($propiedades["dimensiones"])? $propiedades["dimensiones"]: array("alto" => 400, "ancho" => 400);        
             $posicion = (isset($propiedades['posicion']))? $propiedades['posicion']: 2;
             
-            //Si el grafico va abajo, la fila donde comienza es la siguiente a la actual, si no es la fila donde se dibujó el encabezado
+            //Si el grafico va abajo, la fila donde comienza es la siguiente a la actual, si no es la fila donde se dibujï¿½ el encabezado
             $fila = ($posicion == 2)? $this->fila_actual+1 : $this->fila_encabezado ;        
             //Si el grafico va al lado, la columna donde comienza es el numero de columnas de la data mas 1, sino es la primera columna
             $col = ($posicion == 1)? $this->numColumnas()+1: 0;
@@ -415,10 +421,10 @@ HTML;
             }
             
             if($posicion != self::LEYENDA_DERECHA && $posicion != self::LEYENDA_DEBAJO){
-                throw new Exception("Valor {$posicion} no válido para la posición, debe ser LEYENDA_DERECHA ó LEYENDA_DEBAJO");
+                throw new Exception("Valor {$posicion} no vï¿½lido para la posiciï¿½n, debe ser LEYENDA_DERECHA ï¿½ LEYENDA_DEBAJO");
             }
             
-            //Si la leyenda va abajo, la fila donde comienza es la siguiente a la actual, si no es la fila donde se dibujó el encabezado
+            //Si la leyenda va abajo, la fila donde comienza es la siguiente a la actual, si no es la fila donde se dibujï¿½ el encabezado
             $fila = ($posicion == 2)? $this->fila_actual+1 : $this->fila_encabezado ;        
             //Si la leyenda va al lado, la columna donde comienza es el numero de columnas de la data mas 1, sino es la primera columna
             $col = ($posicion == 1)? $this->numColumnas()+1: 0;
@@ -488,28 +494,28 @@ HTML;
             if(!$datos || count($datos) == 0){
                 throw new Exception("No hay datos para el reporte");
             }
-            
+
             $this->data = $datos;
             $totales = array("TOTALES");
             $this->area = array();
-            
+
             $this->setEncabezadoMerge(); //Lama a la funcion que muestra los encabezado agrupados
             $this->setEncabezados();  //Llama a mostrar los encabezados de las tablas
-            $col_ini = 0;        //La columna inicial siempre sera 0     
-            $cols = count($this->columnas);   //Cantidad de columnas de la tabla         
-            
+            $col_ini = 0;        //La columna inicial siempre sera 0
+            $cols = count($this->columnas);   //Cantidad de columnas de la tabla
+
             $row_ini = $this->fila_actual + 1;   //Porque se colocan los titulo en la primera fila
             $this->fila_actual++; //Se mueve la fila actual
             $row = $row_ini; //Se asigna $row_ini a la primera fila
-              
-            
+
+
             $this->html .= "<tbody>";
             foreach ($datos as $data) {
                 $col = $col_ini;
                 $this->html ."<tr>";
                 foreach ($data as $texto) {                    
                     $celda = $this->celda[$col] . $row;
-                    
+
                     if(isset($this->alineacion[$this->columnas[$col]["alineacion"]])){                    
                         $this->sheet->getStyle($celda)->getAlignment()->setHorizontal($this->alineacion[$this->columnas[$col]["alineacion"]]);
                     }
@@ -581,7 +587,7 @@ HTML;
 
             if($this->debug){
                 $this->showTabla();
-                 throw new Exception("Está habilitado el debug: Debe deshabilitarlo para poder mostrar el archivo {$tipo}");            
+                 throw new Exception("Estï¿½ habilitado el debug: Debe deshabilitarlo para poder mostrar el archivo {$tipo}");            
             }
         
             if (headers_sent()) {
@@ -589,7 +595,7 @@ HTML;
             }        
 
             if($tipo != 'xls' &&  $tipo != 'xlsx' && $tipo != 'pdf'){
-                throw new Exception("Tipo de archivo {$tipo} no válido");
+                throw new Exception("Tipo de archivo {$tipo} no vï¿½lido");
             }
             
             ob_clean();
