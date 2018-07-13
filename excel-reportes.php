@@ -93,14 +93,14 @@ class excel_reportes implements ze_reportes_interface{
                 width: 500px;
                 position: absolute;
                 left: 35%;
-                background-image: url('/reporte/articulo3/ze-reportes/stop.png');">{$message}</div>
+                background-image: url('./stop.png');">{$message}</div>
 HTML;
         echo $html;                    
     }
     
     private function _echo($texto, $linea){
         if($this->debug == true){
-            debug("L�nea {$linea}: ".$texto, true);
+            debug("Línea {$linea}: ".$texto, true);
         }
     }
     
@@ -110,9 +110,16 @@ HTML;
     
     public function nuevaHoja($hoja=0, $titulo=null){
         $this->numSheet = $hoja;
-        $this->objPHPExcel->setActiveSheetIndex($this->numSheet);
-        $this->sheet = $this->objPHPExcel->getActiveSheet();   
-        $this->objPHPExcel->createSheet();
+        #Si es una nueva hoja
+        if($hoja != 0) {
+            $this->objPHPExcel->createSheet();
+            $this->objPHPExcel->setActiveSheetIndex($this->numSheet);
+            $this->numSheet = $hoja;
+        }
+        $this->sheet = $this->objPHPExcel->getActiveSheet();
+        if($titulo == null){
+            $titulo = 'Hoja'.($hoja+1);
+        }
         $this->sheet->setTitle($titulo);
         $this->fila_actual = 1;
         $this->columnas = array();
@@ -284,7 +291,7 @@ HTML;
                 return;
             }
 
-$enc=1;
+            $enc=1;
 
             foreach($encabezados as $encabezado2){
 			$row = $this->fila_actual+1;
@@ -499,6 +506,9 @@ $enc=1;
             $totales = array("TOTALES");
             $this->area = array();
 
+            #Habilita la conficacion solo para los datos, ya que esto puede variar con respecto a los titulos ya que viene de base de datos
+            $encoding = (isset($opciones['encoding']) && $opciones['encoding'] != "")? $opciones['encoding']: $this->encoding;
+
             $this->setEncabezadoMerge(); //Lama a la funcion que muestra los encabezado agrupados
             $this->setEncabezados();  //Llama a mostrar los encabezados de las tablas
             $col_ini = 0;        //La columna inicial siempre sera 0
@@ -530,7 +540,7 @@ $enc=1;
                             $this->sheet->getStyle($celda)->getNumberFormat()->setFormatCode($this->formato[$this->columnas[$col]["tipo"]]);                            
                         }
                         else{
-                            if($this->encoding != "utf8") {
+                            if($encoding != "utf8") {
                                 $texto = utf8_encode($texto);
                             }
                         }
