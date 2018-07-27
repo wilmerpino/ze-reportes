@@ -55,9 +55,9 @@ class excel_reportes implements ze_reportes_interface{
         "fecha" => PHPExcel_Style_NumberFormat::FORMAT_DATE_DDMMYYYY                
     );
      
-    public function __construct($encoding = "UTF8", $propiedades = array()){
+    public function __construct($encoding = "utf8", $propiedades = array()){
         try {            
-            $this->titulo = "Utilice el m�todo setTitulo(\$titulo)";
+            $this->titulo = "Utilice el metodo setTitulo(\$titulo)";
             $this->subtitulo = "";            
             $this->error = null;              
             $this->debug = false;   
@@ -75,7 +75,7 @@ class excel_reportes implements ze_reportes_interface{
             $this->setPropiedades($propiedades);
         } catch (Exception $ex) {
             $this->error = $ex->getMessage();
-            $this->debug("Linea: ".__LINE__ . ": " . $ex->getMessage(), true);
+            $this->debug("Linea: ".__LINE__ . ": " . $ex->getMessage());
             exit;
         }
     }
@@ -103,29 +103,41 @@ HTML;
             debug("Línea {$linea}: ".$texto, true);
         }
     }
-    
+
+
     public function modeDebug(){
         $this->debug = true;
     }
     
     public function nuevaHoja($hoja=0, $titulo=null){
-        $this->numSheet = $hoja;
-        #Si es una nueva hoja
-        if($hoja != 0) {
-            $this->objPHPExcel->createSheet();
-            $this->objPHPExcel->setActiveSheetIndex($this->numSheet);
+        try{
             $this->numSheet = $hoja;
+            #Si es una nueva hoja
+            if($hoja != 0) {
+                $this->objPHPExcel->createSheet();
+                $this->objPHPExcel->setActiveSheetIndex($this->numSheet);
+                $this->numSheet = $hoja;
+            }
+            $this->sheet = $this->objPHPExcel->getActiveSheet();
+            if($titulo == null){
+                $titulo = 'Hoja'.($hoja+1);
+            }
+
+            if(mb_detect_encoding($titulo) == 'UTF-8'){
+                $titulo = utf8_encode($titulo);
+                throw new Exception(utf8_decode("Nombre '{$titulo}' no válida para la hoja"));
+            }
+
+            $this->sheet->setTitle($titulo);
+            $this->fila_actual = 1;
+            $this->columnas = array();
         }
-        $this->sheet = $this->objPHPExcel->getActiveSheet();
-        if($titulo == null){
-            $titulo = 'Hoja'.($hoja+1);
+        catch(Exception $ex){
+            $this->error = $ex->getMessage();
+            $this->debug($this->error);
         }
-        $this->sheet->setTitle($titulo);
-        $this->fila_actual = 1;
-        $this->columnas = array();
     }
-    
-    
+
     public function setDefaults($alto = 15, $alto_encabezados = 20, $fuente = 'Arial', $tamano = 10){
         $this->alto_fila = $alto;
         $this->alto_encabezados = $alto_encabezados;
@@ -166,8 +178,8 @@ HTML;
             $properties['Description'] = $descripcion;
             $properties['Keywords'] = $claves;
             $properties['Category'] = $categoria;
-            $properties['NOTA'] = "Las propiedades deben estar en codificaci�n UTF8, utilice utf8_encode";
-            $this->debug($properties, true);
+            $properties['NOTA'] = "Las propiedades deben estar en codificacion UTF8, utilice utf8_encode";
+            $this->debug($properties);
         }
     }
     
@@ -277,7 +289,7 @@ HTML;
         }
         catch(Exception $ex){
             $this->error = $ex->getMessage();
-            $this->debug($this->error, true);            
+            $this->debug($this->error);
             exit;
         }
     }
@@ -318,7 +330,7 @@ HTML;
         }
         catch(Exception $ex){
             $this->error = $ex->getMessage();
-            $this->debug($this->error, true);            
+            $this->debug($this->error);
             exit;
         }
     }
@@ -402,7 +414,7 @@ HTML;
         }
         catch(Exception $ex){
             $this->error = $ex->getMessage();
-            $this->debug($this->error, true);            
+            $this->debug($this->error);
             exit;
         }
 
@@ -490,7 +502,7 @@ HTML;
         }
         catch(Exception $ex){
             $this->error = $ex->getMessage();
-            $this->debug(__LINE__.": ".$this->error, true);            
+            $this->debug(__LINE__.": ".$this->error);
             exit;
         }
     }
@@ -523,13 +535,13 @@ HTML;
             foreach ($datos as $data) {
                 $col = $col_ini;
                 $this->html ."<tr>";
-                foreach ($data as $texto) {                    
+                foreach ($data as $texto) {
                     $celda = $this->celda[$col] . $row;
 
-                    if(isset($this->alineacion[$this->columnas[$col]["alineacion"]])){                    
+                    if(isset($this->alineacion[$this->columnas[$col]["alineacion"]])){
                         $this->sheet->getStyle($celda)->getAlignment()->setHorizontal($this->alineacion[$this->columnas[$col]["alineacion"]]);
                     }
-                    
+
                     //Si se configura un formato personalizado
                     if(isset($this->columnas[$col]["formato"])){
                         $this->sheet->getStyle($celda)->getNumberFormat()->setFormatCode($this->columnas[$col]["formato"]);
@@ -537,17 +549,35 @@ HTML;
                     else  //En caso que se defina un formato de acuerdo al tipo (entero, decimal, fehca, moneda)
                     {
                         if(isset($this->columnas[$col]["tipo"]) && $this->columnas[$col]["tipo"] != "texto"){
-                            $this->sheet->getStyle($celda)->getNumberFormat()->setFormatCode($this->formato[$this->columnas[$col]["tipo"]]);                            
+                            if($this->columnas[$col]["tipo"] == "rut"){
+                                $texto = formato::rut($texto);
+                            }
+                            else{
+                                if($this->columnas[$col]["tipo"] == "url"){
+                                    $this->sheet->getStyle($celda)->getNumberFormat()->setFormatCode(PHPExcel_Cell_DataType::TYPE_STRING2);
+                                }
+                                else{
+                                    $this->sheet->getStyle($celda)->getNumberFormat()->setFormatCode($this->formato[$this->columnas[$col]["tipo"]]);
+                                }
+                            }
                         }
                         else{
-                            if($encoding != "utf8") {
+                            if(strtolower($encoding) != "utf8") {
                                 $texto = utf8_encode($texto);
                             }
                         }
                     }
-                    $this->sheet->setCellValue($celda, $texto);
-                    $this->html .= "<td><small>{$celda}</small><p>{$texto}</p></td>";
-                    $col++;                    
+                    if(isset($this->columnas[$col]["tipo"]) && $this->columnas[$col]["tipo"] != "url") {
+                        $this->sheet->setCellValue($celda, $texto);
+                        $this->html .= "<td><small>{$celda}</small><p>{$texto}</p></td>";
+                    }
+                    else{
+                        $caption = (isset($this->columnas[$col]["caption"]))? $this->columnas[$col]["caption"]: "Descargar";
+                        $this->sheet->setCellValue($celda, $caption);
+                        $this->sheet->getCell($celda)->getHyperlink()->setUrl($texto);
+                        $this->html .= "<td><small>{$celda}</small><p><a href='{$texto}' target='_blank'>{$caption}</a></p></td>";
+                    }
+                    $col++;
                 }
                 $this->sheet->getRowDimension($row)->setRowHeight($this->alto_fila);
                 if($row%2 == 0){
@@ -571,7 +601,7 @@ HTML;
             $this->area = array("fila_ini" => $row_ini, "col_ini" => $this->celda[$col_ini], "fila_fin" => $row-1, "col_fin" => $this->celda[$cols]);
         } catch (Exception $e) {
             $this->error = "Linea ".__LINE__.": ".$e->getMessage();
-            $this->debug($this->error, true);            
+            $this->debug($this->error);
             return(false);
         }
     }
@@ -597,7 +627,7 @@ HTML;
 
             if($this->debug){
                 $this->showTabla();
-                 throw new Exception("Est� habilitado el debug: Debe deshabilitarlo para poder mostrar el archivo {$tipo}");            
+                 throw new Exception("Esta habilitado el debug: Debe deshabilitarlo para poder mostrar el archivo {$tipo}");
             }
         
             if (headers_sent()) {
@@ -637,7 +667,7 @@ HTML;
             }
         } catch (Exception $e) {
             $this->error = "Linea ".__LINE__.": ".$e->getMessage();
-            $this->debug($this->error, true);                        
+            $this->debug($this->error);
         }
     }
     
