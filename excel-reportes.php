@@ -670,6 +670,30 @@ HTML;
             $this->debug($this->error);
         }
     }
+
+    function save($path){
+        try{
+            if($this->error){
+                throw new Exception($this->error);
+            }
+
+            if($this->debug){
+                $this->showTabla();
+                throw new Exception("Esta habilitado el debug: Debe deshabilitarlo para poder mostrar el archivo");
+            }
+
+            if (headers_sent()) {
+                throw new Exception("Se ha enviado un texto antes de imprimir el archivo");
+            }
+
+            $objWriter = PHPExcel_IOFactory::createWriter($this->objPHPExcel, 'Excel2007');
+            $objWriter->setIncludeCharts($this->grafico);
+            $objWriter->save( $path."/".$this->nombre_archivo);
+        } catch (Exception $e) {
+            $this->error = "Linea ".__LINE__.": ".$e->getMessage();
+            $this->debug($this->error);
+        }
+    }
     
 }
 
