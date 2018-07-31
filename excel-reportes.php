@@ -236,19 +236,30 @@ HTML;
         
         $this->html .= "<h1>{$titulo}</h1>";
     }
-    
-    public function setSubTitulo($subtitulo){
-        $subtitulo = ($this->encoding  != "utf8")? utf8_encode($subtitulo): $subtitulo;
-        $celda = "A" . $this->fila_actual;
-        $this->sheet->setCellValue($celda, $subtitulo);
-        $this->sheet->getStyle($celda)->applyFromArray($this->getEstilo('subtitulo'));
-        
+
+    public function setSubTitulo($subs){
+        $subtitulos = array();
+        if(is_array($subs)){
+            $subtitulos = $subs;
+        }
+        else{
+            $subtitulos[0] = $subs;
+        }
+
         $encabezados = $this->columnas;
         $cols = count($encabezados);
-        $this->sheet->mergeCells($celda.':'.$this->celda[$cols-1].$this->fila_actual);        
-        $this->fila_actual++;
-        
-        $this->html .= "<h2>{$subtitulo}</h2>";
+
+        foreach($subtitulos as $subtitulo){
+            $subtitulo = ($this->encoding  != "utf8")? utf8_encode($subtitulo): $subtitulo;
+            $celda = "A" . $this->fila_actual;
+            $this->sheet->setCellValue($celda, $subtitulo);
+            $this->sheet->getStyle($celda)->applyFromArray($this->getEstilo('subtitulo'));
+
+            $this->sheet->mergeCells($celda.':'.$this->celda[$cols-1].$this->fila_actual);
+            $this->fila_actual++;
+
+            $this->html .= "<h2>{$subtitulo}</h2>";
+        }
     }
     
     public function setEncabezados(){
