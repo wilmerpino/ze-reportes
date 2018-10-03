@@ -247,7 +247,38 @@ $_style = array(
             'color' => array('rgb' => '000000'),
             'size' => 12
         ),
-    )
+    ),
+    'totales' =>  array(
+        'borders' => array(
+            'outline' => array(
+                'style' => PHPExcel_Style_Border::BORDER_THIN,
+                'color' => array('argb' => '62727b'),
+            ),
+            'inside' => array(
+                'style' => PHPExcel_Style_Border::BORDER_THIN,
+                'color' => array('argb' => '62727b'),
+            ),
+        ),
+        'font' => array(
+            'bold' => true,
+            'name' => 'Verdana',
+            'color' => array('rgb' => 'FFFFFF'),
+            'size' => 10
+        ),
+        'fill' => array(
+            'type' => PHPExcel_Style_Fill::FILL_SOLID,
+            'rotation' => 90,
+            'color' => array(
+                'argb' => '2286c3'
+            ),
+            'startColor' => array(
+                'argb' => 'FFFFFF',
+            ),
+            'endColor' => array(
+                'argb' => 'FFFFFFFF',
+            )
+        )
+    ),
 );
 
 

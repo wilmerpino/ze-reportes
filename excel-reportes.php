@@ -314,33 +314,26 @@ HTML;
                 return;
             }
 
-            $enc=1;
-
-            foreach($encabezados as $encabezado2){
-			$row = $this->fila_actual+1;
-            $col = 0;
-            $celda = $this->celda[$col] . $row;
-            foreach($encabezado2 as $encabezado){
-                $texto = ($this->encoding  != "utf8")?  utf8_encode($encabezado["nombre"]):  $encabezado["nombre"];                
+            $row = $this->fila_actual+1;
+            foreach($encabezados as $encabezado){
+                $texto = ($this->encoding  != "utf8")?  utf8_encode($encabezado["nombre"]):  $encabezado["nombre"];
                 $col_ini = $encabezado["desde"];
                 $col_fin = $encabezado["hasta"];
                 $celda = $this->celda[$col_ini].$row.":".$this->celda[$col_fin].$row;
-				//print_r($encabezado);
-				//print_r($this->celda[$col_ini]);
+                /*print_r($celda);echo"<br/>";
+                print_r($encabezado);echo"<br/>";
+                print_r($this->celda[$col_ini] . $row);*/
                 $this->sheet->mergeCells($celda);
                 $this->sheet->setCellValue($this->celda[$col_ini] . $row, $texto);
                 $this->sheet->getStyle($celda)->getAlignment()->setHorizontal($this->alineacion[$encabezado["alineacion"]]);
-                $this->sheet->getStyle($celda)->applyFromArray($this->getEstilo('encabezados_agrupados_'.$enc));
-                $col++;
+                $this->sheet->getStyle($celda)->applyFromArray($this->getEstilo('encabezados_agrupados_1'));
+                $this->sheet->getRowDimension($row)->setRowHeight($this->alto_encabezados);
             }
-            $this->sheet->getRowDimension($row)->setRowHeight($this->alto_encabezados);
-            $this->fila_actual = $row; 
-			$enc++;
-			}			
+            $this->fila_actual = $row;
             return(true);
         }
         catch(Exception $ex){
-            $this->error = $ex->getMessage();
+            $this->error = "Linea ".__LINE__.": ".$ex->getMessage()." (".$this->celda[$col_ini] . $row.")";
             $this->debug($this->error);
             exit;
         }
